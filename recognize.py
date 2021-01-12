@@ -3,56 +3,65 @@ import pyaudio
 import wave
 import unidecode
 
-CHUNK = 1024
-FORMAT = pyaudio.paInt16
-CHANNELS = 2
-RATE = 44100
-RECORD_SECONDS = 7
-WAVE_OUTPUT_FILENAME = "output.wav"
 
-p = pyaudio.PyAudio()
+def record_audio():
+    CHUNK = 1024
+    FORMAT = pyaudio.paInt16
+    CHANNELS = 2
+    RATE = 44100
+    RECORD_SECONDS = 7
+    WAVE_OUTPUT_FILENAME = "output.wav"
 
-stream = p.open(format=FORMAT,
-                channels=CHANNELS,
-                rate=RATE,
-                input=True,
-                frames_per_buffer=CHUNK)
+    p = pyaudio.PyAudio()
 
-print("* recording")
+    stream = p.open(format=FORMAT,
+                    channels=CHANNELS,
+                    rate=RATE,
+                    input=True,
+                    frames_per_buffer=CHUNK)
 
-frames = []
+    print("**** recording ****")
 
-for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-    data = stream.read(CHUNK)
-    frames.append(data)
+    frames = []
 
-print("* done recording")
+    for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+        data = stream.read(CHUNK)
+        frames.append(data)
 
-stream.stop_stream()
-stream.close()
-p.terminate()
+    print("**** done recording ****")
 
-wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
-wf.setnchannels(CHANNELS)
-wf.setsampwidth(p.get_sample_size(FORMAT))
-wf.setframerate(RATE)
-wf.writeframes(b''.join(frames))
-wf.close()
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
 
-r = sr. Recognizer()
+    wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
+    wf.setnchannels(CHANNELS)
+    wf.setsampwidth(p.get_sample_size(FORMAT))
+    wf.setframerate(RATE)
+    wf.writeframes(b''.join(frames))
+    wf.close()
 
-input_audio = sr.AudioFile('output.wav')
 
-with input_audio as source:
-    audio = r.record(source)
+def parse_audio():
+    global input_text_cleansed
+    input_audio = sr.AudioFile('output.wav') # Read WAV file and convert to text
+    r = sr.Recognizer()
 
-input_text_parsed = r.recognize_google(audio, language="es-US") # Read WAV file and convert to text
-input_text_cleansed = unidecode.unidecode(input_text_parsed) # Normalize text. (Convert text with accents to regular letters)
+    with input_audio as source:
+        audio = r.record(source)
 
-print("Parsed: ",input_text_parsed)
-print("Cleansed (no accent): ", input_text_cleansed)
+    input_text_parsed = r.recognize_google(audio, language="es-US")
+    input_text_cleansed = unidecode.unidecode(input_text_parsed) # Normalize text. (Convert text with accents to regular letters)
 
-if (input_text_cleansed.lower() == "el perro esta corriendo en la calle"):
-    print("Congrats! You got the correct word!")
-else:
-    print("Sorry, that was the wrong answer. You are STUPID!")
+    print(input_text_parsed)
+    print("Parsed: ",input_text_parsed)
+    print("Cleansed (no accent): ", input_text_cleansed)
+
+
+
+
+
+# if (input_text_cleansed.lower() == "el perro esta corriendo en la calle"):
+#     print("Congrats! You got the correct word!")
+# else:
+#     print("Sorry, that was the wrong answer. You are STUPID!")
